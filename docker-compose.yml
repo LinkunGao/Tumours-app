@@ -1,0 +1,19 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: compose_dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/desktop/docker/import_nrrd:/segmentation_gui_backend/import_nrrd
+      - ~/desktop/docker/export_data:/segmentation_gui_backend/export_data
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: frontend_dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
