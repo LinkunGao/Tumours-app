@@ -9,6 +9,7 @@ services:
     volumes:
       - ~/desktop/docker/import_nrrd:/segmentation_gui_backend/import_nrrd
       - ~/desktop/docker/export_data:/segmentation_gui_backend/export_data
+    # used for in encrypt drive 
     # volumes:
     #   - type: bind
     #     source: H:\docker\import_nrrd
