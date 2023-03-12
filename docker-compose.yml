@@ -9,6 +9,13 @@ services:
     volumes:
       - ~/desktop/docker/import_nrrd:/segmentation_gui_backend/import_nrrd
       - ~/desktop/docker/export_data:/segmentation_gui_backend/export_data
+    # volumes:
+    #   - type: bind
+    #     source: H:\docker\import_nrrd
+    #     target: /segmentation_gui_backend/import_nrrd
+    #   - type: bind
+    #     source: H:\docker\export_data
+    #     target: /segmentation_gui_backend/export_data
   frontend:
     build:
       context: ./frontend
