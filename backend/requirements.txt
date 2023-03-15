@@ -2,3 +2,4 @@ fastapi[all]
 Pillow
 numpy
 SimpleITK
+pandas

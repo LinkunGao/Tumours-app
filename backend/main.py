@@ -11,6 +11,7 @@ from models import model
 import os
 from io import BytesIO
 from task import task_oi
+import pandas as pd
 
 app = FastAPI()
 
@@ -38,6 +39,10 @@ app.add_middleware(
 
 @app.get('/')
 async def root():
+    df = pd.read_csv('~/desktop/metadata_prone_to_supine_t1_2017_04_18.csv')
+    column = df['participant_id']
+    print(type(column))
+    print(column[0])
     return "Welcome to segmentation backend"
 
 
