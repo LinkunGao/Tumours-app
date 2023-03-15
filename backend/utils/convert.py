@@ -8,7 +8,7 @@ from .tools import find_frist_nrrd, IMPORT_FOLDER_PATH, EXPORT_FOLDER_PATH
 def convert_to_nii_sigel_channel(casename):
     cwd = os.getcwd()
     nii_image = convert_json_data(casename)
-    nii_path = os.path.join(cwd,EXPORT_FOLDER_PATH,casename, "mask.nii")
+    nii_path = os.path.join(cwd,EXPORT_FOLDER_PATH,casename, "mask.nii.gz")
     # Save the image as a NIfTI file
     sitk.WriteImage(nii_image, nii_path)
     print("convert successfully!")
@@ -103,7 +103,7 @@ def convert_to_nii_full_channels(casename):
         nii.SetSpacing(spacing)
         nii.SetOrigin(origin)
 
-        nii_path = os.path.join(folder, "mask.nii")
+        nii_path = os.path.join(os.path.join(os.getcwd(),EXPORT_FOLDER_PATH,casename), "mask.nii")
         # Save the image as a NIfTI file
         sitk.WriteImage(nii, nii_path)
         print("convert successfully!")

@@ -1,2 +1,6 @@
 .DS_Store
 .idea/
+__pycache__
+./task/__pycache__
+./utils/__pycache__
+./models/__pycache__
