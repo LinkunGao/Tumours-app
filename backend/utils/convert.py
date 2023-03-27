@@ -1,14 +1,14 @@
 import numpy as np
 import json
 import SimpleITK as sitk
-import os
+from pathlib import Path
 from .tools import find_frist_nrrd, IMPORT_FOLDER_PATH, EXPORT_FOLDER_PATH
 
 
 def convert_to_nii_sigel_channel(casename):
-    cwd = os.getcwd()
+    cwd = Path.cwd()
     nii_image = convert_json_data(casename)
-    nii_path = os.path.join(cwd,EXPORT_FOLDER_PATH,casename, "mask.nii.gz")
+    nii_path = cwd / EXPORT_FOLDER_PATH / casename / "mask.nii.gz"
     # Save the image as a NIfTI file
     sitk.WriteImage(nii_image, nii_path)
     print("convert successfully!")
@@ -16,7 +16,7 @@ def convert_to_nii_sigel_channel(casename):
 
 def convert_to_nrrd_sigel_channel(folder):
     nrrd_image = convert_json_data(folder)
-    nrrd_path = os.path.join(folder, "mask.nrrd")
+    nrrd_path = Path(folder, "mask.nrrd")
     # Save the image as a NRRD file
     sitk.WriteImage(nrrd_image, nrrd_path)
     print("convert successfully!")
@@ -25,8 +25,8 @@ def convert_json_data(casename):
 
     print("start converting...")
 
-    nrrd_path = find_frist_nrrd(os.path.join(os.getcwd(),IMPORT_FOLDER_PATH,casename))
-    mask_path = os.path.join(os.path.join(os.getcwd(),EXPORT_FOLDER_PATH,casename), "mask.json")
+    nrrd_path = find_frist_nrrd(Path.cwd() / IMPORT_FOLDER_PATH / casename)
+    mask_path = Path.cwd() / EXPORT_FOLDER_PATH / casename / "mask.json"
 
     nrrd_image = sitk.ReadImage(nrrd_path)
     headerKeys = nrrd_image.GetMetaDataKeys()
@@ -70,7 +70,7 @@ def convert_to_nii_full_channels(casename):
 
     print("start converting...")
     print(casename)
-    mask_path = os.path.join(os.getcwd(),EXPORT_FOLDER_PATH,casename, "mask.json")
+    mask_path = Path.cwd() / EXPORT_FOLDER_PATH /casename / "mask.json"
 
     with open(mask_path) as user_file:
         file_contents = user_file.read()
@@ -103,7 +103,7 @@ def convert_to_nii_full_channels(casename):
         nii.SetSpacing(spacing)
         nii.SetOrigin(origin)
 
-        nii_path = os.path.join(os.path.join(os.getcwd(),EXPORT_FOLDER_PATH,casename), "mask.nii")
+        nii_path = Path.cwd() / EXPORT_FOLDER_PATH / casename /  "mask.nii"
         # Save the image as a NIfTI file
         sitk.WriteImage(nii, nii_path)
         print("convert successfully!")

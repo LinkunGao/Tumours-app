@@ -1,6 +1,7 @@
-import os
+
 import json
 import time
+from pathlib import Path
 
 MASKS = None
 FILE_PATH = ""
@@ -11,65 +12,58 @@ CASE_NAMES = []
 
 
 def check_file_exist(directory, filename):
-    cwd = os.getcwd()
-    filepath = os.path.join(cwd, 'import_nrrd', directory, filename)
-    if os.path.exists(filepath):
+    cwd = Path.cwd()
+    filepath = cwd / 'import_nrrd'/ directory/ filename
+    if filepath.exists:
         return True
     else:
         return False
 
 
-# not use
-def get_real_path(directory, subdirectory, filename):
-    cwd = os.getcwd()
-    filepath = os.path.join(cwd, directory, subdirectory, filename)
-    if os.path.exists(filepath):
-        return filepath
-    else:
-        return ''
-
-
 def get_all_folder_names(directory, subdirectory=""):
-    cwd = os.getcwd()
-    folder_path = os.path.join(cwd, directory, subdirectory)
-    folder_names = [name for name in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, name))]
+    cwd = Path.cwd()
+    folder_path = cwd / directory / subdirectory
+    folder_names = []
+    for subfolder in folder_path.glob("*"):
+        if subfolder.is_dir():
+            folder_names.append(subfolder.name)  
     return folder_names
 
 
 def get_all_file_names(directory, subdirectory=""):
-    cwd = os.getcwd()
-    folder_path = os.path.join(cwd, directory, subdirectory)
-    items = os.listdir(folder_path)
-    for item in items:
-        if ('.nrrd' not in item) and ('.json' not in item):
-            items.remove(item)
-
-    file_names = [item for item in items if os.path.isfile(os.path.join(folder_path, item))]
+    cwd = Path.cwd()
+    folder_path = cwd / directory / subdirectory
+    file_names = []
+    for file_path in folder_path.glob("*.nrrd"):
+        if file_path.is_file():
+            file_names.append(file_path.name)
     sorted_files_names = sorted(file_names)
     return sorted_files_names
 
 
 def check_mask_json_file(directory, subdirectory, filename):
-    cwd = os.getcwd()
-    folder_path = os.path.join(cwd, directory, subdirectory)
+    cwd = Path.cwd()
+    folder_path = cwd / directory / subdirectory
     # check the folder is exist or not
-    if not os.path.exists(folder_path):
-        os.mkdir(folder_path)
+    if not folder_path.exists():
+        folder_path.mkdir(parents=True)
         return False
     else:
         # check the mask json file is exist or not
-        file_path = os.path.join(cwd, directory, subdirectory, filename)
-        if not os.path.exists(file_path):
+        file_path = cwd / directory / subdirectory / filename
+        if not file_path.exists():
             return False
         else:
             return True
 
 def find_frist_nrrd(folder):
-    file_list = os.listdir(folder)
-    nrrd_list = [filename for filename in file_list if filename.endswith(".nrrd")]
-    if len(nrrd_list)>0:
-        nrrd_path = os.path.join(folder,nrrd_list[0])
-        return nrrd_path
+    """
+    :param folder:
+    :return: the first nrrd file path
+    """
+    first_file = next(Path(folder).glob("*.nrrd"), None)
+    if first_file is not None:
+        return first_file
     else:
         return ""
 
@@ -78,28 +72,20 @@ def write_data_to_json(directory, subdirectory, masks):
     global MASKS
     global FILE_PATH
     global FOLDER_PATH
-    start_time = time.time()
-    cwd = os.getcwd()
-    FOLDER_PATH = os.path.join(cwd, directory, subdirectory)
-    file_path = os.path.join(FOLDER_PATH,"mask.json")
-    # for mask in masks:
-    #     base = mask["width"]*mask["height"]*4
-    #     mask["data"] = [0] * base
-    # with open(file_path, "w") as file:
-    #     json.dump(masks, file)
+    cwd = Path.cwd()
+    FOLDER_PATH = cwd / directory / subdirectory
+    file_path = FOLDER_PATH / "mask.json"
     FILE_PATH = file_path
     MASKS = masks
     saveMaskData()
-    end_time = time.time()
-    run_time = end_time - start_time
-    # print("代码运行时间为：{:.2f}秒".format(run_time))
+
 
 
 def replace_data_to_json(directory, subdirectory, slice):
-    cwd = os.getcwd()
-    file_path = os.path.join(cwd, directory, subdirectory, "mask.json")
+    cwd = Path.cwd()
+    file_path = cwd / directory / subdirectory / "mask.json"
     index = slice.sliceId
-    if os.path.isfile(file_path):
+    if file_path.exists():
         # Open the JSON file in read mode
         # with open(file_path, 'r') as f:
         #     # Load the JSON data from the file into a Python object
