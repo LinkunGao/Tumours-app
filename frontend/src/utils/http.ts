@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
-const Base_URL = `http://127.0.0.1:8000/api`;
+const Base_URL = `http://127.0.0.1:5001/api`;
 axios.defaults.baseURL = Base_URL;
 
 axios.interceptors.request.use((config: AxiosRequestConfig | any) => config);
