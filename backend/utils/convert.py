@@ -45,10 +45,12 @@ def convert_json_data(casename):
         images.append(data)
 
     try:
-        pixels = np.array(images).reshape((depth, height, width, 4))
+        pixels = np.array(images, dtype=np.uint8).reshape((depth, height, width, 4))
 
         # Take the average of the RGB values and use the Alpha value as the transparency
         merged_pixels = np.mean(pixels[:, :, :, :3], axis=3)
+        merged_pixels[merged_pixels > 0] = 255
+
 
         new_image = sitk.GetImageFromArray(merged_pixels)
 

@@ -101,9 +101,9 @@ const { sendSaveMask } = useSaveMasksStore();
 const { maskBackend } = storeToRefs(useMaskStore());
 const { getMaskDataBackend } = useMaskStore();
 // web worker for send masks to backend
-const worker = new Worker(new URL("../../utils/worker.ts", import.meta.url), {
-  type: "module",
-});
+// const worker = new Worker(new URL("../../utils/worker.ts", import.meta.url), {
+//   type: "module",
+// });
 
 onMounted(async () => {
   await getInitData();
@@ -172,8 +172,73 @@ const resetMainAreaSize = (factor: number) => {
   nrrdTools.setMainAreaSize(factor);
 };
 
-worker.onmessage = async function (ev: MessageEvent) {
-  const result = ev.data;
+// worker.onmessage = async function (ev: MessageEvent) {
+//   const result = ev.data;
+//   const body = {
+//     caseId: currentCaseId,
+//     masks: result.masks as IExportMask[],
+//   };
+//   let start_c: unknown = new Date();
+//   await sendInitMask(body);
+//   let end_c: unknown = new Date();
+//   let timeDiff_c = (end_c as number) - (start_c as number);
+//   console.log(`axios send Time taken: ${timeDiff_c}ms`);
+//   console.log("send");
+// };
+
+function restructData(
+  originArr: Copper.paintImageType[],
+  len: number,
+  width: number,
+  height: number,
+  voxelSpacing: number[],
+  spaceOrigin: number[],
+  msg: string
+) {
+  const reformatData = [];
+
+  let start_c: unknown = new Date();
+  for (let i = 0; i < len; i++) {
+    let exportTemp = {
+      sliceIndex: 0,
+      dataFormat:
+        "RGBA - Each successive 4-digit number forms a pixel point in data array",
+      width,
+      height,
+      voxelSpacing,
+      spaceOrigin,
+      data: [],
+    };
+
+    exportTemp.sliceIndex = originArr[i].index;
+    if (msg === "save") {
+      const copiedArray = originArr[i].image.data.slice();
+      (exportTemp as any).data = [...copiedArray];
+    }
+
+    reformatData.push(exportTemp);
+  }
+
+  return reformatData;
+}
+
+const initWithoutWorker = async () =>{
+  const masksData = nrrdTools.paintImages.z;
+  const dimensions = nrrdTools.getCurrentImageDimension();
+  const len = masksData.length;
+  const width = dimensions[0];
+  const height = dimensions[1];
+  const voxelSpacing = nrrdTools.getVoxelSpacing();
+  const spaceOrigin = nrrdTools.getSpaceOrigin();
+
+  
+  const masks = restructData(masksData, len, width, height, voxelSpacing, spaceOrigin, "init");
+  const result = {
+    masks,
+    len,
+    width,
+    height,
+  };
   const body = {
     caseId: currentCaseId,
     masks: result.masks as IExportMask[],
@@ -184,28 +249,29 @@ worker.onmessage = async function (ev: MessageEvent) {
   let timeDiff_c = (end_c as number) - (start_c as number);
   console.log(`axios send Time taken: ${timeDiff_c}ms`);
   console.log("send");
-};
 
-const sendInitMaskToBackend = () => {
-  const masksData = nrrdTools.paintImages.z;
-  const dimensions = nrrdTools.getCurrentImageDimension();
-  const len = masksData.length;
-  const width = dimensions[0];
-  const height = dimensions[1];
-  const voxelSpacing = nrrdTools.getVoxelSpacing();
-  const spaceOrigin = nrrdTools.getSpaceOrigin();
-  if (len > 0) {
-    worker.postMessage({
-      masksData,
-      len,
-      width,
-      height,
-      voxelSpacing,
-      spaceOrigin,
-      msg: "init",
-    });
-  }
-};
+}
+
+// const sendInitMaskToBackend = () => {
+//   const masksData = nrrdTools.paintImages.z;
+//   const dimensions = nrrdTools.getCurrentImageDimension();
+//   const len = masksData.length;
+//   const width = dimensions[0];
+//   const height = dimensions[1];
+//   const voxelSpacing = nrrdTools.getVoxelSpacing();
+//   const spaceOrigin = nrrdTools.getSpaceOrigin();
+//   if (len > 0) {
+//     // worker.postMessage({
+//     //   masksData,
+//     //   len,
+//     //   width,
+//     //   height,
+//     //   voxelSpacing,
+//     //   spaceOrigin,
+//     //   msg: "init",
+//     // });
+//   }
+// };
 
 const loadJsonMasks = (url: string) => {
   loadingContainer.style.display = "flex";
@@ -235,7 +301,8 @@ const setMaskData = () => {
         if (caseUrls.value)
           loadJsonMasks(loadedUrls[currentCaseId].jsonUrl as string);
       } else {
-        sendInitMaskToBackend();
+        // sendInitMaskToBackend();
+        initWithoutWorker();
       }
     }
   }
@@ -272,7 +339,8 @@ const getMaskData = async (
     mask,
   };
   if (clearAllFlag) {
-    sendInitMaskToBackend();
+    // sendInitMaskToBackend();
+    initWithoutWorker()
   } else {
     await sendReplaceMask(body);
   }
